@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes, Link, useNavigate } from 'react-router-dom'
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { ArrowUpRight, Wallet, PiggyBank, Receipt, Check, AlertCircle } from 'lucide-react'
 
 const Layout = lazy(() => import('./components/Layout.jsx').then(m => ({default:m.Layout})))

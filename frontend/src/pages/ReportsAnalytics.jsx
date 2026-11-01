@@ -9,6 +9,7 @@ const PALETTE = ['#10b981','#8b5cf6','#f59e0b','#38bdf8','#fb7185','#84cc16','#6
 const sections = [['summary','Overall summary'],['transactions','Income and expenses'],['budgets','Budgets'],['savings','Savings activity'],['debts','Friends and debt'],['reminders','Bills and payments']]
 
 export default function ReportsAnalytics() {
+  const { dark, toggleTheme } = useTheme()
   const [period,setPeriod]=useState('this_month'),[start,setStart]=useState(''),[end,setEnd]=useState('')
   const [kind,setKind]=useState(''),[category,setCategory]=useState(''),[method,setMethod]=useState('')
   const [report,setReport]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[exporting,setExporting]=useState('')

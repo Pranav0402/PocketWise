@@ -25,3 +25,15 @@
 .savings-planner-note,.savings-planner-warning{font-size:10px;line-height:1.6;margin:13px 0 0}
 .savings-planner-note{color:#23855f}.savings-planner-warning{color:#bd6a35}
 @media(max-width:700px){.savings-planner-inputs{grid-template-columns:repeat(2,minmax(0,1fr))}.savings-planner-results{grid-template-columns:1fr}}
+
+@media print{
+  body{background:#fff!important}
+  .sidebar,.topbar,.report-controls,.report-filterbar,.reports-page .button,.report-alert{display:none!important}
+  .app-shell,.main-area,.page-content{margin:0!important;padding:0!important;background:#fff!important}
+  .reports-page{color:#17232c!important;background:#fff!important}
+  .reports-page .panel,.reports-page .stat-card{break-inside:avoid;box-shadow:none!important;border:1px solid #dfe5e8!important}
+  .reports-page .page-header{margin-bottom:12px}
+  .reports-page .page-header h1,.reports-page h2,.reports-page b,.reports-page td{color:#17232c!important}
+  .reports-page .report-chart{break-inside:avoid}
+  @page{size:A4;margin:14mm}
+}

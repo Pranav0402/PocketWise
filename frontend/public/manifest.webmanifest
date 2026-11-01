@@ -1,0 +1,17 @@
+{
+  "id": "/",
+  "name": "PocketWise - Student Finance",
+  "short_name": "PocketWise",
+  "description": "A private, practical money companion for student life.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f9fc",
+  "theme_color": "#111827",
+  "icons": [
+    { "src": "/icons/pocketwise-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/pocketwise-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
+

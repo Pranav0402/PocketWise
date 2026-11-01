@@ -1,0 +1,72 @@
+.app-shell.theme-dark {
+  color-scheme: dark;
+  --ink: #e5edf3;
+  --muted: #9aa8b5;
+  --line: #2a3945;
+  background: #111a22;
+  color: #e5edf3;
+}
+.app-shell.theme-light { color-scheme: light; }
+.app-shell.theme-dark .main-area,
+.app-shell.theme-dark .page-content { background: #111a22; }
+.app-shell.theme-dark .topbar { background: #17232d; border-color: #293844; }
+.app-shell.theme-dark .breadcrumb b,
+.app-shell.theme-dark .page-header h1 { color: #e5edf3; }
+.app-shell.theme-dark .breadcrumb,
+.app-shell.theme-dark .page-header p { color: #99a9b5; }
+.app-shell.theme-dark .panel,
+.app-shell.theme-dark .stat-card,
+.app-shell.theme-dark .mini-stat,
+.app-shell.theme-dark .transaction-panel,
+.app-shell.theme-dark .month-picker,
+.app-shell.theme-dark .settings-card,
+.app-shell.theme-dark .privacy-card { background: #192630; border-color: #2a3945; color: #e5edf3; }
+.app-shell.theme-dark .panel h2,
+.app-shell.theme-dark .panel h3,
+.app-shell.theme-dark .stat-value,
+.app-shell.theme-dark .stat-label,
+.app-shell.theme-dark .mini-stat b { color: #e5edf3; }
+.app-shell.theme-dark .panel p,
+.app-shell.theme-dark .transaction-empty p,
+.app-shell.theme-dark .transaction-state,
+.app-shell.theme-dark .stat-foot,
+.app-shell.theme-dark .mini-stat span { color: #9aa8b5; }
+.app-shell.theme-dark .transaction-filters { background: #192630; border-color: #2a3945; }
+.app-shell.theme-dark .transaction-filters select,
+.app-shell.theme-dark .filter-date,
+.app-shell.theme-dark .sort-control,
+.app-shell.theme-dark .transaction-search { background: #14212a; color: #c6d2da; border-color: #394955; }
+.app-shell.theme-dark .transaction-table th { background: #202f3a; color: #aab8c3; }
+.app-shell.theme-dark .transaction-table td { color: #c6d2da; border-color: #2a3945; }
+.app-shell.theme-dark .transaction-table td:first-child b,
+.app-shell.theme-dark .transaction-empty b { color: #e5edf3; }
+.app-shell.theme-dark .transaction-table td:first-child small { color: #9aa8b5; }
+.app-shell.theme-dark .transaction-table tr:hover { background: #202f3a; }
+.app-shell.theme-dark .transaction-empty > span { background: #17382f; color: #80d9b4; }
+.app-shell.theme-dark .table-scroll,
+.app-shell.theme-dark .table-wrap,
+.app-shell.theme-dark table { color: #dce6ed; }
+.app-shell.theme-dark th { background: #202f3a; color: #aab8c3; border-color: #2c3b47; }
+.app-shell.theme-dark td { border-color: #2a3945; color: #dce6ed; }
+.app-shell.theme-dark tr:hover td { background: #202f3a; }
+.app-shell.theme-dark input,
+.app-shell.theme-dark select,
+.app-shell.theme-dark textarea,
+.app-shell.theme-dark .search-box { background-color: #14212a; color: #e5edf3; border-color: #394955; }
+.app-shell.theme-dark input::placeholder,
+.app-shell.theme-dark textarea::placeholder { color: #82929e; }
+.app-shell.theme-dark .button.secondary { background: #263640; color: #dce6ed; }
+.app-shell.theme-dark .button.secondary:hover,
+.app-shell.theme-dark .icon-button:hover { background: #334550; color: #fff; }
+.app-shell.theme-dark .empty-state { color: #aab8c3; }
+.app-shell .theme-mode-toggle { width: 34px; height: 34px; color: #64727e; }
+.app-shell.theme-dark .theme-mode-toggle { color: #c5d1d9; }
+.app-shell.theme-dark .assistant-page,
+.app-shell.theme-dark .budget-management,
+.app-shell.theme-dark .friends-debts-view,
+.app-shell.theme-dark .reminders-page,
+.app-shell.theme-dark .reports-page,
+.app-shell.theme-dark .savings-page { color-scheme: dark; }
+@media (max-width: 800px) {
+  .app-shell .topbar-right { gap: 10px; }
+}

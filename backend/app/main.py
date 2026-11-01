@@ -145,6 +145,17 @@ def me(user: User = Depends(current_user)):
     return {"id": user.id, "name": user.name, "email": user.email}
 
 
+@app.put("/api/auth/me")
+def update_me(payload: dict, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    name = payload.get("name")
+    if not isinstance(name, str) or not 2 <= len(name.strip()) <= 80:
+        raise HTTPException(422, "Display name must be between 2 and 80 characters")
+    user.name = name.strip()
+    db.commit()
+    db.refresh(user)
+    return {"id": user.id, "name": user.name, "email": user.email}
+
+
 def crud_routes(path, model, create_schema, amount_fields=("amount",)):
     @app.get(f"/api/{path}")
     def listing(user: User = Depends(current_user), db: Session = Depends(get_db), limit: int = Query(100, ge=1, le=500),

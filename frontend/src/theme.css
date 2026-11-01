@@ -70,3 +70,14 @@
 @media (max-width: 800px) {
   .app-shell .topbar-right { gap: 10px; }
 }
+
+.app-shell.theme-dark .modal{background:#192630;color:#e5edf3;border:1px solid #344653}
+.app-shell.theme-dark .modal h2,.app-shell.theme-dark .field>span{color:#e5edf3}
+.app-shell.theme-dark .field input,.app-shell.theme-dark .field select,.app-shell.theme-dark .field textarea,.app-shell.theme-dark .select-control{background:#14212a!important;color:#e5edf3!important;border-color:#394955!important;color-scheme:dark}
+.app-shell.theme-dark .field input::placeholder,.app-shell.theme-dark .field textarea::placeholder{color:#82929e}
+.app-shell.theme-dark .savings-modal-context{color:#b5c3cc}
+.app-shell.theme-dark .savings-planner-card{background:#192630;border-color:#2a3945;color:#e5edf3}
+.app-shell.theme-dark .savings-planner-inputs label{color:#b8c5ce}
+.app-shell.theme-dark .savings-planner-inputs input,.app-shell.theme-dark .savings-planner-inputs select{background:#14212a;color:#e5edf3;border-color:#394955}
+.app-shell.theme-dark .savings-planner-results>div{background:#14212a}
+.app-shell.theme-dark .savings-planner-results small{color:#9aa8b5}

@@ -505,3 +505,24 @@ def test_reminder_recurrence_date_arithmetic():
     assert recurrence_next(date(2025,1,31),"quarterly",anchor_day=31) == date(2025,4,30)
     assert recurrence_next(date(2025,1,1),"weekly") == date(2025,1,8)
     assert recurrence_next(date(2025,1,1),"custom",interval_days=11) == date(2025,1,12)
+
+
+def test_email_otp_password_reset_flow(monkeypatch):
+    import re
+    import app.main as main_module
+    sent = []
+    monkeypatch.setattr(main_module, "send_password_reset_email", lambda email, code: sent.append((email, code)))
+    headers = auth("Reset User", "reset@example.com")
+    request = client.post("/api/auth/forgot-password", json={"email": "reset@example.com"})
+    assert request.status_code == 200
+    assert request.json()["message"].startswith("If an account exists")
+    assert len(sent) == 1 and sent[0][0] == "reset@example.com"
+    code = sent[0][1]
+    assert re.fullmatch(r"\\d{6}", code)
+    invalid = client.post("/api/auth/reset-password", json={"email":"reset@example.com", "otp":"000000", "new_password":"new-secure-pass-456"})
+    if code != "000000":
+        assert invalid.status_code == 400
+    changed = client.post("/api/auth/reset-password", json={"email":"reset@example.com", "otp":code, "new_password":"new-secure-pass-456"})
+    assert changed.status_code == 200
+    assert client.post("/api/auth/login", json={"email":"reset@example.com", "password":"new-secure-pass-456"}).status_code == 200
+    assert client.post("/api/auth/login", json={"email":"reset@example.com", "password":"secure-pass-123"}).status_code == 401

@@ -204,3 +204,13 @@ class NotificationPreferenceUpdate(BaseModel):
         if any(day < 0 or day > 365 for day in value) or len(set(value)) != len(value):
             raise ValueError("Advance reminder days must be unique values from 0 to 365")
         return sorted(value, reverse=True)
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetConfirm(BaseModel):
+    email: EmailStr
+    otp: str = Field(pattern=r"^\d{6}$")
+    new_password: str = Field(min_length=8, max_length=128)

@@ -210,3 +210,15 @@ class Notification(Base):
     remind_on: Mapped[PythonDate] = mapped_column(Date)
     read: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
+class PasswordResetOTP(Base):
+    __tablename__ = "password_reset_otps"
+    __table_args__ = (Index("ix_password_reset_email_created", "email", "created_at"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), index=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[int] = mapped_column(Integer)
+    expires_at: Mapped[int] = mapped_column(Integer)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    consumed: Mapped[bool] = mapped_column(Boolean, default=False)

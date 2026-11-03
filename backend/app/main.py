@@ -183,17 +183,20 @@ def forgot_password(payload: PasswordResetRequest, db: Session = Depends(get_db)
     if recent_count >= 3:
         return {"message": "If an account exists for that email, a reset code will be sent."}
     code = f"{secrets.randbelow(1_000_000):06d}"
-    db.query(PasswordResetOTP).filter(PasswordResetOTP.email == email, PasswordResetOTP.consumed.is_(False)).delete(synchronize_session=False)
+    db.query(PasswordResetOTP).filter(PasswordResetOTP.email == email, PasswordResetOTP.consumed.is_(False)).update(
+        {PasswordResetOTP.consumed: True}, synchronize_session=False
+    )
     otp = PasswordResetOTP(email=email, code_hash=password_reset_code_hash(email, code),
                            created_at=now, expires_at=now + 600, attempts=0, consumed=False)
     db.add(otp)
     db.commit()
     try:
         send_password_reset_email(email, code)
-    except Exception as exc:
+    except Exception:
         db.delete(otp)
         db.commit()
-        raise HTTPException(503, "Email delivery is temporarily unavailable. Please try again later.") from exc
+        # Keep the response identical so SMTP failures do not reveal account existence.
+        return {"message": "If an account exists for that email, a reset code will be sent."}
     return {"message": "If an account exists for that email, a reset code will be sent."}
 
 
@@ -218,7 +221,9 @@ def reset_password(payload: PasswordResetConfirm, db: Session = Depends(get_db))
         raise HTTPException(400, "The reset code is invalid or expired. Request a new code.")
     user.password_hash = hash_password(payload.new_password)
     otp.consumed = True
-    db.query(PasswordResetOTP).filter(PasswordResetOTP.email == email, PasswordResetOTP.id != otp.id).delete(synchronize_session=False)
+    db.query(PasswordResetOTP).filter(PasswordResetOTP.email == email, PasswordResetOTP.id != otp.id).update(
+        {PasswordResetOTP.consumed: True}, synchronize_session=False
+    )
     db.commit()
     return {"message": "Your password has been reset. You can now sign in."}
 

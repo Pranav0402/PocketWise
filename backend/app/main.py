@@ -5,6 +5,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from io import StringIO
 import csv
 import json
+import logging
 import hashlib
 import hmac
 import secrets
@@ -38,6 +39,7 @@ app.add_middleware(CORSMiddleware, allow_origins=allowed_origins,
                    allow_credentials=False, allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
                    allow_headers=["Authorization", "Content-Type"])
 bearer = HTTPBearer(auto_error=False)
+logger = logging.getLogger(__name__)
 
 
 def kolkata_today():
@@ -193,6 +195,7 @@ def forgot_password(payload: PasswordResetRequest, db: Session = Depends(get_db)
     try:
         send_password_reset_email(email, code)
     except Exception:
+        logger.exception("Password reset email delivery failed")
         db.delete(otp)
         db.commit()
         # Keep the response identical so SMTP failures do not reveal account existence.

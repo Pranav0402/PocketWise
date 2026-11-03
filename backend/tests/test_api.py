@@ -518,7 +518,7 @@ def test_email_otp_password_reset_flow(monkeypatch):
     assert request.json()["message"].startswith("If an account exists")
     assert len(sent) == 1 and sent[0][0] == "reset@example.com"
     code = sent[0][1]
-    assert re.fullmatch(r"\\d{6}", code)
+    assert re.fullmatch(r"\d{6}", code)
     invalid = client.post("/api/auth/reset-password", json={"email":"reset@example.com", "otp":"000000", "new_password":"new-secure-pass-456"})
     if code != "000000":
         assert invalid.status_code == 400

@@ -280,6 +280,16 @@ A practical free-tier demonstration setup is Vercel for the static React fronten
 
 **Frontend (Vercel static site):** Create a project from the `frontend` directory. Build command: `npm run build`; output directory: `dist`; install command: `npm install`. Set `VITE_API_URL=https://<your-api-host>/api` in the frontend project's build environment. `frontend/vercel.json` provides SPA route fallback and baseline browser security headers. Deploy the API first so you can configure its exact origin in backend CORS, then rebuild/deploy the frontend with the API URL. Vercel Hobby is free for personal/non-commercial projects; check current policy and usage limits before public or commercial use.
 
+**Email password recovery (Gmail SMTP):** Configure these environment variables on the backend hosting service (Render → PocketWise service → Environment), not only as GitHub Actions secrets:
+
+- `SMTP_HOST=smtp.gmail.com`
+- `SMTP_PORT=587`
+- `SMTP_USERNAME=<the dedicated PocketWise Gmail address>`
+- `SMTP_PASSWORD=<the Google App Password>`
+- `SMTP_FROM_EMAIL=<the same Gmail address>`
+
+Keep the App Password private and never commit it to the repository. The app sends a six-digit email OTP that expires after 10 minutes, allows up to five verification attempts, and returns a generic request response to avoid revealing whether an email is registered. SMS and phone-number recovery are not used. If SMTP is not configured, the reset request endpoint returns a temporary delivery error.
+
 **Backend (Render web service):** Create a Python web service rooted at `backend`. Build command: `pip install -r requirements.txt`. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers`. Set `APP_ENVIRONMENT=production`, `AUTO_MIGRATE=false`, a generated `SECRET_KEY`, the database URL, `CORS_ORIGINS=https://<your-frontend-host>`, and `ASSISTANT_PROVIDER=rules`. Do not set CORS to `*`. Use the host's secret/environment settings, not a committed file. Render free service sleep means cold starts and is not suitable when reliable availability is required.
 
 **Persistent database (Supabase PostgreSQL):** Create a PostgreSQL project, copy its connection string into `DATABASE_URL` using SQLAlchemy's `postgresql+psycopg://` driver prefix, and use the provider's recommended SSL parameters. For example, transform `postgresql://USER:PASSWORD@HOST:PORT/DB?sslmode=require` to `postgresql+psycopg://USER:PASSWORD@HOST:PORT/DB?sslmode=require`. Keep the database password in the backend host's secret manager. Run the schema initializer above against the production database before the first API start, after taking a backup. Confirm `/api/health` returns `{"status":"ok","app":"PocketWise"}`. Never use local SQLite on an ephemeral host filesystem. Free-tier inactivity pauses and storage quotas can interrupt service; move to durable hosting and tested backups before relying on the service.

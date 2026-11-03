@@ -288,7 +288,7 @@ A practical free-tier demonstration setup is Vercel for the static React fronten
 - `SMTP_PASSWORD=<the Google App Password>`
 - `SMTP_FROM_EMAIL=<the same Gmail address>`
 
-Keep the App Password private and never commit it to the repository. The app sends a six-digit email OTP that expires after 10 minutes, allows up to five verification attempts, and returns a generic request response to avoid revealing whether an email is registered. SMS and phone-number recovery are not used. If SMTP is not configured, the reset request endpoint returns a temporary delivery error.
+Keep the App Password private and never commit it to the repository. The app sends a six-digit email OTP that expires after 10 minutes, allows up to five verification attempts, and returns a generic request response to avoid revealing whether an email is registered. SMS and phone-number recovery are not used. If SMTP is not configured or delivery fails, the endpoint keeps the same generic response for account privacy; check the backend service logs and environment settings when troubleshooting.
 
 **Backend (Render web service):** Create a Python web service rooted at `backend`. Build command: `pip install -r requirements.txt`. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers`. Set `APP_ENVIRONMENT=production`, `AUTO_MIGRATE=false`, a generated `SECRET_KEY`, the database URL, `CORS_ORIGINS=https://<your-frontend-host>`, and `ASSISTANT_PROVIDER=rules`. Do not set CORS to `*`. Use the host's secret/environment settings, not a committed file. Render free service sleep means cold starts and is not suitable when reliable availability is required.
 

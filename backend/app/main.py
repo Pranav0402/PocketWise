@@ -16,9 +16,9 @@ from sqlalchemy.exc import IntegrityError
 from app.core.config import settings
 from app.core.database import get_db, initialize_database
 from app.core.security import create_token, hash_password, token_user_id, verify_password
-from app.models.models import User, Income, Expense, Budget, SavingsGoal, SavingsTransaction, Friend, Debt, DebtRepayment, Reminder, RecurringSchedule, ReminderPayment, Notification, NotificationPreference
+from app.models.models import User, Income, Expense, Budget, SavingsGoal, SavingsTransaction, Friend, Debt, DebtRepayment, Reminder, RecurringSchedule, ReminderPayment, Notification, NotificationPreference, PasswordResetOTP
 from app.schemas.schemas import (Register, Login, IncomeCreate, ExpenseCreate, BudgetCreate,
-    GoalCreate, Contribution, FriendCreate, DebtCreate, RepaymentCreate, ReminderCreate, ReminderPaymentCreate, NotificationPreferenceUpdate, AssistantChat, AffordabilityCheck)
+    GoalCreate, Contribution, FriendCreate, DebtCreate, RepaymentCreate, ReminderCreate, ReminderPaymentCreate, NotificationPreferenceUpdate, AssistantChat, AffordabilityCheck, PasswordResetRequest, PasswordResetConfirm)
 from app.assistant_engine import DISCLAIMER as ASSISTANT_DISCLAIMER, question_range as assistant_question_range, answer_question as assistant_rule_answer, affordability_result, rupees as assistant_rupees
 from app.assistant_provider import OllamaProvider
 
@@ -138,6 +138,83 @@ def login(payload: Login, db: Session = Depends(get_db)):
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(401, "Email or password is incorrect")
     return {"access_token": create_token(user.id), "token_type": "bearer", "user": {"id": user.id, "name": user.name, "email": user.email}}
+
+
+def password_reset_code_hash(email: str, code: str) -> str:
+    payload = f"{email}:{code}".encode("utf-8")
+    return hmac.new(settings.secret_key.encode("utf-8"), payload, hashlib.sha256).hexdigest()
+
+
+def send_password_reset_email(email: str, code: str) -> None:
+    if not settings.smtp_username or not settings.smtp_password:
+        raise RuntimeError("SMTP email delivery is not configured")
+    message = EmailMessage()
+    message["Subject"] = "Your PocketWise password reset code"
+    message["From"] = settings.smtp_from_email or settings.smtp_username
+    message["To"] = email
+    message.set_content(
+        f"Your PocketWise password reset code is {code}.\\n\\n"
+        "This code expires in 10 minutes and can be used only once. "
+        "If you did not request this, you can ignore this email."
+    )
+    with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
+        server.starttls()
+        server.login(settings.smtp_username, settings.smtp_password)
+        server.send_message(message)
+
+
+@app.post("/api/auth/forgot-password")
+def forgot_password(payload: PasswordResetRequest, db: Session = Depends(get_db)):
+    email = str(payload.email).strip().lower()
+    now = int(time.time())
+    # Keep the response identical for known and unknown accounts.
+    user = db.scalar(select(User).where(User.email == email))
+    if not user:
+        return {"message": "If an account exists for that email, a reset code will be sent."}
+    recent_count = db.scalar(select(func.count(PasswordResetOTP.id)).where(
+        PasswordResetOTP.email == email, PasswordResetOTP.created_at >= now - 900
+    )) or 0
+    if recent_count >= 3:
+        return {"message": "If an account exists for that email, a reset code will be sent."}
+    code = f"{secrets.randbelow(1_000_000):06d}"
+    db.query(PasswordResetOTP).filter(PasswordResetOTP.email == email, PasswordResetOTP.consumed.is_(False)).delete(synchronize_session=False)
+    otp = PasswordResetOTP(email=email, code_hash=password_reset_code_hash(email, code),
+                           created_at=now, expires_at=now + 600, attempts=0, consumed=False)
+    db.add(otp)
+    db.commit()
+    try:
+        send_password_reset_email(email, code)
+    except Exception as exc:
+        db.delete(otp)
+        db.commit()
+        raise HTTPException(503, "Email delivery is temporarily unavailable. Please try again later.") from exc
+    return {"message": "If an account exists for that email, a reset code will be sent."}
+
+
+@app.post("/api/auth/reset-password")
+def reset_password(payload: PasswordResetConfirm, db: Session = Depends(get_db)):
+    email = str(payload.email).strip().lower()
+    now = int(time.time())
+    otp = db.scalar(select(PasswordResetOTP).where(
+        PasswordResetOTP.email == email, PasswordResetOTP.consumed.is_(False)
+    ).order_by(PasswordResetOTP.created_at.desc()))
+    if not otp or otp.expires_at < now or otp.attempts >= 5:
+        raise HTTPException(400, "The reset code is invalid or expired. Request a new code.")
+    expected = password_reset_code_hash(email, payload.otp)
+    if not hmac.compare_digest(otp.code_hash, expected):
+        otp.attempts += 1
+        db.commit()
+        raise HTTPException(400, "The reset code is invalid or expired. Request a new code.")
+    user = db.scalar(select(User).where(User.email == email))
+    if not user:
+        otp.consumed = True
+        db.commit()
+        raise HTTPException(400, "The reset code is invalid or expired. Request a new code.")
+    user.password_hash = hash_password(payload.new_password)
+    otp.consumed = True
+    db.query(PasswordResetOTP).filter(PasswordResetOTP.email == email, PasswordResetOTP.id != otp.id).delete(synchronize_session=False)
+    db.commit()
+    return {"message": "Your password has been reset. You can now sign in."}
 
 
 @app.get("/api/auth/me")

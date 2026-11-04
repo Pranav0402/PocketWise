@@ -14,11 +14,8 @@ class Settings(BaseSettings):
     assistant_provider: str = "rules"
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen2.5:3b"
-    smtp_host: str = "smtp.gmail.com"
-    smtp_port: int = Field(default=587, ge=1, le=65535)
-    smtp_username: str = ""
-    smtp_password: str = ""
-    smtp_from_email: str = ""
+    brevo_api_key: str = ""
+    brevo_sender_email: str = ""
 
     model_config = SettingsConfigDict(env_file=Path(__file__).resolve().parents[3] / ".env", extra="ignore")
 

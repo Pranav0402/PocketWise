@@ -9,9 +9,8 @@ import logging
 import hashlib
 import hmac
 import secrets
-import smtplib
 import time
-from email.message import EmailMessage
+import urllib.request
 from zoneinfo import ZoneInfo
 from fastapi import Depends, FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -154,21 +153,36 @@ def password_reset_code_hash(email: str, code: str) -> str:
 
 
 def send_password_reset_email(email: str, code: str) -> None:
-    if not settings.smtp_username or not settings.smtp_password:
-        raise RuntimeError("SMTP email delivery is not configured")
-    message = EmailMessage()
-    message["Subject"] = "Your PocketWise password reset code"
-    message["From"] = settings.smtp_from_email or settings.smtp_username
-    message["To"] = email
-    message.set_content(
-        f"Your PocketWise password reset code is {code}.\\n\\n"
-        "This code expires in 10 minutes and can be used only once. "
-        "If you did not request this, you can ignore this email."
+    if not settings.brevo_api_key or not settings.brevo_sender_email:
+        raise RuntimeError("Transactional email delivery is not configured")
+
+    payload = {
+        "sender": {"email": settings.brevo_sender_email, "name": "PocketWise"},
+        "to": [{"email": email}],
+        "subject": "Your PocketWise password reset code",
+        "textContent": (
+            f"Your PocketWise password reset code is {code}.\n\n"
+            "This code expires in 10 minutes and can be used only once. "
+            "If you did not request this, you can ignore this email."
+        ),
+    }
+    request = urllib.request.Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "api-key": settings.brevo_api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        method="POST",
     )
-    with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
-        server.starttls()
-        server.login(settings.smtp_username, settings.smtp_password)
-        server.send_message(message)
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            if not 200 <= response.status < 300:
+                raise RuntimeError("Transactional email delivery failed")
+    except Exception:
+        # Do not expose provider response bodies, request contents, or credentials.
+        raise RuntimeError("Transactional email delivery failed") from None
 
 
 @app.post("/api/auth/forgot-password")
